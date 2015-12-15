@@ -12,13 +12,6 @@ var express = require('express')
   , nStore = require('nstore')
   , config = require('./config');
 
-//TODO clean var
-var options = {
-  host: 'api.deezer.com',
-  port: 80,
-  path: '/user/me/history?access_token=',
-};
-
 //TODO create an result object with a playlist property
 var result = {};
 
@@ -55,7 +48,7 @@ passport.use(new DeezerStrategy({
       // represent the logged-in user.  In a typical application, you would want
       // to associate the Deezer account with a user record in your database,
       // and return that user instead.
-      var url = 'http://'+ options.host + options.path + accessToken;
+      var url = 'http://'+ config.deezer.host + config.deezer.path + accessToken;
       var request = require('request');
       request(url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
