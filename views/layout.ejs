@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Passport-Deezer Example</title>
+  </head>
+  <body>
+    <% if (!user) { %>
+      <p>
+      <a href="/">Accueil</a> |
+      <a href="/login">Connection</a>
+      </p>
+    <% } else { %>
+      <p>
+      <a href="/">Accueil</a> |
+      <a href="/account">Profil</a> |
+      <a href="/logout">Deconnection</a>
+      </p>
+    <% } %>
+    <%- body %>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="/js/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+<% if (!user) { %>
+  <h2>Bienvenue. Merci de vous connecter</h2>
+<% } else { %>
+  <h2>Bonjour, <%= user.displayName %>.</h2>
+  <div id='results'></div>
+<% } %>
