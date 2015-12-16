@@ -94,7 +94,11 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride('X-HTTP-Method-Override'));
-app.use(session({ secret: 'keyboard cat' }));
+app.use(session({ 
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(express.static('public'));
 
 // Initialize Passport!  Also use passport.session() middleware, to support
