@@ -10,7 +10,8 @@ var express = require('express')
   , DeezerStrategy = require('passport-deezer').Strategy
   , http = require('http')
   , mongoose = require('mongoose')
-  , config = require('./config');
+  , config = require('./config')
+  , request = require('request');
 
 var result = {};
 
@@ -47,26 +48,27 @@ passport.use(new DeezerStrategy({
       // represent the logged-in user.  In a typical application, you would want
       // to associate the Deezer account with a user record in your database,
       // and return that user instead.
-      var url = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken;
-      var request = require('request');
-      request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          result.userInfo = JSON.parse(body);
-          
-          var db = mongoose.connect("mongodb://localhost/concertupdate");
-        
-          mongoose.connection.on("error", function (){
-            console.log("error to connection ");
-          });
+      var urlToGetInfoUser = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken;
+      var urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
 
-          mongoose.connection.on("open", function (){
+      var db = mongoose.connect("mongodb://localhost/concertupdate");
+    
+      mongoose.connection.on("error", function (){
+        console.log("error to connection ");
+      });
 
-            var userSchema = mongoose.Schema({
-              firstName : String,
-              lastName: String,
-              email: String,
-              picture: String,
-            });
+      mongoose.connection.on("open", function () {
+
+        var userSchema = mongoose.Schema({
+          firstName : String,
+          lastName: String,
+          email: String,
+          picture: String,
+        });
+
+        request(urlToGetInfoUser, function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            result.userInfo = JSON.parse(body);
 
             var DeezerUser = mongoose.model("DeezerUser", userSchema);
 
@@ -82,9 +84,31 @@ passport.use(new DeezerStrategy({
               if (err) return console.error(err);
               console.log('deezerusers', deezerusers);
             });
-          })
-        }
-      })
+          }
+        });
+
+        // request(urlToGetHistoryUser, function (error, response, body) {
+        //   if (!error && response.statusCode == 200) {
+        //     result.history = JSON.parse(body);
+
+        //     var DeezerUser = mongoose.model("DeezerUser", userSchema);
+
+        //     var du = new DeezerUser({ 
+        //       firstName: result.userInfo.firstname,
+        //       lastName: result.userInfo.lastname,
+        //       email: result.userInfo.email, 
+        //       picture: result.userInfo.picture_big,  
+        //     });
+        //     du.save();
+            
+        //     DeezerUser.find(function (err, deezerusers) {
+        //       if (err) return console.error(err);
+        //       console.log('deezerusers', deezerusers);
+        //     });
+        //   }
+        // });
+
+      });
       return done(null, profile);
     });
   }
