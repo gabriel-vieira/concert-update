@@ -12,7 +12,6 @@ var express = require('express')
   , mongoose = require('mongoose')
   , config = require('./config');
 
-//TODO create an result object with a playlist property
 var result = {};
 
 // Passport session setup.
@@ -48,21 +47,41 @@ passport.use(new DeezerStrategy({
       // represent the logged-in user.  In a typical application, you would want
       // to associate the Deezer account with a user record in your database,
       // and return that user instead.
-      var url = 'http://'+ config.deezer.host + config.deezer.path + accessToken;
+      var url = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken;
       var request = require('request');
       request(url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
-          result.history = JSON.parse(body);
+          result.userInfo = JSON.parse(body);
+          
           var db = mongoose.connect("mongodb://localhost/concertupdate");
         
           mongoose.connection.on("error", function (){
-            console.log("erreur de connection à la base de donnée");
+            console.log("error to connection ");
           });
 
           mongoose.connection.on("open", function (){
 
-            var concertupdateSchema = mongoose.Schema({})
-            console.log(result.history);
+            var userSchema = mongoose.Schema({
+              firstName : String,
+              lastName: String,
+              email: String,
+              picture: String,
+            });
+
+            var DeezerUser = mongoose.model("DeezerUser", userSchema);
+
+            var du = new DeezerUser({ 
+              firstName: result.userInfo.firstname,
+              lastName: result.userInfo.lastname,
+              email: result.userInfo.email, 
+              picture: result.userInfo.picture_big,  
+            });
+            du.save();
+            
+            DeezerUser.find(function (err, deezerusers) {
+              if (err) return console.error(err);
+              console.log('deezerusers', deezerusers);
+            });
           })
         }
       })
