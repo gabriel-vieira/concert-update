@@ -9,7 +9,7 @@ var express = require('express')
   , expressLayouts = require('express-ejs-layouts')
   , DeezerStrategy = require('passport-deezer').Strategy
   , http = require('http')
-  , nStore = require('nstore')
+  , mongoose = require('mongoose')
   , config = require('./config');
 
 //TODO create an result object with a playlist property
@@ -52,30 +52,18 @@ passport.use(new DeezerStrategy({
       var request = require('request');
       request(url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
-          result.history = JSON.parse(body); 
+          result.history = JSON.parse(body);
+          var db = mongoose.connect("mongodb://localhost/concertupdate");
+        
+          mongoose.connection.on("error", function (){
+            console.log("erreur de connection à la base de donnée");
+          });
 
-          var users = nStore.new('data/users.db', function () {
-            users.save("deezer", result.history, function (err) {
-                if (err) { throw err; }
-                // The save is finished and written to disk safely
-            });
+          mongoose.connection.on("open", function (){
 
-            users.get("deezer", function (err, doc, key) {
-              if (err) { throw err; }
-              result = doc;
-            });
-
-            app.get('/history', function(req, res){
-              // res.send(doc);
-              
-              res.format({
-                  'application/json': function(){
-                    res.send({ history: result });
-                  }
-              });    
-            });
-
-          });  
+            var concertupdateSchema = mongoose.Schema({})
+            console.log(result.history);
+          })
         }
       })
       return done(null, profile);

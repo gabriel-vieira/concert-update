@@ -19,6 +19,6 @@
     "passport": "^0.2.1",
     "passport-deezer": "^0.2.0",
     "request": "2.67.0",
-    "nstore": "^0.5.2"
+    "mongoose": "^4.3.4"
   }
 }
