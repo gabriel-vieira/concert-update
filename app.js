@@ -5,9 +5,8 @@ var passport = require('passport')
   , mongoose = require('mongoose')
   , config = require('./config')
   , request = require('request')
+  , promise = require('promise')
   , controllers = require('./controllers');
-
-var result = {};
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -62,12 +61,10 @@ passport.use(new DeezerStrategy({
 
         request(urlToGetInfoUser, function (error, response, body) {
           if (!error && response.statusCode == 200) {
-            result.userInfo = JSON.parse(body);
-
-            du.firstName = result.userInfo.firstname;
-            du.lastName = result.userInfo.lastname;
-            du.email = result.userInfo.email;
-            du.picture = result.userInfo.picture_big;
+            du.firstName = JSON.parse(body).firstname;
+            du.lastName = JSON.parse(body).lastname;
+            du.email = JSON.parse(body);
+            du.picture = JSON.parse(body).picture_big;
 
             du.save();
           }
@@ -75,9 +72,7 @@ passport.use(new DeezerStrategy({
 
         request(urlToGetHistoryUser, function (error, response, body) {
           if (!error && response.statusCode == 200) {
-            result.history = JSON.parse(body);
-
-            du.history = result.history.data;
+            du.history = JSON.parse(body).data;
             du.save();
           }
         });
