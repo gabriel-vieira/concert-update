@@ -1,31 +1,44 @@
+var express = require('express')
+, morgan = require('morgan')
+, cookieParser = require('cookie-parser')
+, bodyParser = require('body-parser')
+, expressLayouts = require('express-ejs-layouts')
+, methodOverride = require('method-override')
+, session = require('express-session');
+
+
+var app = express();
+
+// configure Express
+app.set('views','./views');
+app.set('view engine', 'ejs');
+app.use(expressLayouts)
+app.use(morgan('combined'));
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(methodOverride('X-HTTP-Method-Override'));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(express.static('public'));
+
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.redirect('/login')
+}
+
 module.exports.set = function(passport) {
-  var express = require('express')
-  , morgan = require('morgan')
-  , cookieParser = require('cookie-parser')
-  , bodyParser = require('body-parser')
-  , expressLayouts = require('express-ejs-layouts')
-  , methodOverride = require('method-override')
-  , session = require('express-session');
-
-
-  var app = express();
-
-  // configure Express
-  app.set('views','./views');
-  app.set('view engine', 'ejs');
-  app.use(expressLayouts)
-  app.use(morgan('combined'));
-  app.use(cookieParser());
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(bodyParser.json());
-  app.use(methodOverride('X-HTTP-Method-Override'));
-  app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false
-  }));
-  app.use(express.static('public'));
-
   // Initialize Passport!  Also use passport.session() middleware, to support
   // persistent login sessions (recommended).
   app.use(passport.initialize());
@@ -76,15 +89,13 @@ module.exports.set = function(passport) {
   var server = app.listen(3000);
 }
 
-// Simple route middleware to ensure user is authenticated.
-//   Use this route middleware on any resource that needs to be protected.  If
-//   the request is authenticated (typically via a persistent login session),
-//   the request will proceed.  Otherwise, the user will be redirected to the
-//   login page.
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  res.redirect('/login')
+module.exports.sendHistoryDataInFormatJSON = function(result) {
+  app.get('/history', function(req, res){
+    // res.send(doc);
+    res.format({
+        'application/json': function(){
+          res.send({ history: result });
+        }
+    });    
+  });
 }

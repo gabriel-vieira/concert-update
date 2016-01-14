@@ -65,22 +65,23 @@ passport.use(new DeezerStrategy({
             du.lastName = JSON.parse(body).lastname;
             du.email = JSON.parse(body);
             du.picture = JSON.parse(body).picture_big;
-
-            du.save();
+            //TODO uncomment du.save
+            // du.save();
           }
         });
 
         request(urlToGetHistoryUser, function (error, response, body) {
           if (!error && response.statusCode == 200) {
             du.history = JSON.parse(body).data;
-            du.save();
+            //TODO uncomment du.save
+            // du.save();
           }
         });
 
-
         DeezerUser.find(function (err, deezerusers) {
           if (err) return console.error(err);
-          console.log('deezerusers', deezerusers);
+
+          controllers.sendHistoryDataInFormatJSON(deezerusers);
         });
 
       });
