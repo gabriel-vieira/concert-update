@@ -91,6 +91,9 @@ module.exports.set = function(passport) {
 
 module.exports.sendHistoryDataInFormatJSON = function(result) {
   app.get('/history', function(req, res){
+
+    console.log('inside sendHistoryDataInFormatJSON');
+
     // res.send(doc);
     res.format({
         'application/json': function(){
