@@ -51,22 +51,30 @@ function getConnectionToDatabase (accessToken, refreshToken, profile, done) {
       return done(null, profile);  
 }
 
-function sortInfosUser (accessToken, refreshToken, profile, done) {
+function getInfosUser (accessToken, refreshToken, profile, done) {
 
   var urlToGetInfoUser = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken,
-      urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken,
-      result = {};
+      urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
       
   request(urlToGetHistoryUser, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      result.history = JSON.parse(body).data;
-      result.profile = profile;
+      var  listArtistSorted = sortHistory(JSON.parse(body).data);
+      controllers.sendHistoryDataInFormatJSON(listArtistSorted);
     }
   });
 
-  controllers.sendHistoryDataInFormatJSON(result);
-
   return done(null, profile);  
+}
+
+function sortHistory (dataFromDeezer) {
+  var listSorted = [];
+  for (song in dataFromDeezer) {
+    var artistName = dataFromDeezer[song].artist.name;
+    if (listSorted.indexOf(artistName)  == -1) {
+        listSorted.push(artistName);
+    };
+  }
+  return listSorted;
 }
 
 var passport = require('passport')
@@ -77,7 +85,8 @@ var passport = require('passport')
   , config = require('./config')
   , request = require('request')
   , promise = require('promise')
-  , controllers = require('./controllers');
+  , controllers = require('./controllers')
+  , util = require('util');
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -106,7 +115,7 @@ passport.use(new DeezerStrategy({
 
   },
   function(accessToken, refreshToken, profile, done) {
-    sortInfosUser(accessToken, refreshToken, profile, done);
+    getInfosUser(accessToken, refreshToken, profile, done);
   }
 ));
 
