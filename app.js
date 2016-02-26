@@ -53,15 +53,21 @@ function getConnectionToDatabase (accessToken, refreshToken, profile, done) {
 
 function getInfosUser (accessToken, refreshToken, profile, done) {
 
-  var urlToGetInfoUser = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken,
-      urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
-      
-  request(urlToGetHistoryUser, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      var  listArtistSorted = sortHistory(JSON.parse(body).data);
-      controllers.sendHistoryDataInFormatJSON(listArtistSorted);
-    }
-  });
+  var urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
+  var listSongs = [];
+
+  var  listArtistSorted = sortHistory(getHistory(urlToGetHistoryUser, listSongs));
+
+  controllers.sendHistoryDataInFormatJSON(listArtistSorted);    
+  // request(urlToGetHistoryUser, function (error, response, body) {
+  //   if (!error && response.statusCode == 200) {
+
+  //     console.log(JSON.parse(body).next);
+
+  //     var  listArtistSorted = sortHistory(JSON.parse(body).data);
+  //     controllers.sendHistoryDataInFormatJSON(listArtistSorted);
+  //   }
+  // });
 
   return done(null, profile);  
 }
@@ -74,7 +80,18 @@ function sortHistory (dataFromDeezer) {
         listSorted.push(artistName);
     };
   }
+
   return listSorted;
+}
+
+function getHistory (urlAPI, listSongsConcatened ) {
+
+  request(urlAPI, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      listSongsConcatened.push(JSON.parse(body).data);
+      return listSongsConcatened;
+    }
+  });
 }
 
 var passport = require('passport')
@@ -85,8 +102,7 @@ var passport = require('passport')
   , config = require('./config')
   , request = require('request')
   , promise = require('promise')
-  , controllers = require('./controllers')
-  , util = require('util');
+  , controllers = require('./controllers');
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
