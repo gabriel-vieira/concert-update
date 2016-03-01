@@ -1,95 +1,31 @@
-function getConnectionToDatabase (accessToken, refreshToken, profile, done) {
-      var urlToGetInfoUser = 'http://'+ config.deezer.host + config.deezer.pathInfoUser + accessToken;
-      var urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
-
-      var db = mongoose.connect("mongodb://localhost/concertupdate");
-
-      mongoose.connection.on("error", function (){
-        console.log("error to connection ");
-      });
-
-      mongoose.connection.on("open", function () {
-
-        var userSchema = mongoose.Schema({
-          firstName : String,
-          lastName: String,
-          email: String,
-          picture: String,
-          history: Array,
-        });
-
-        var DeezerUser = mongoose.model("DeezerUser", userSchema);
-
-        var du = new DeezerUser();
-
-        request(urlToGetInfoUser, function (error, response, body) {
-          if (!error && response.statusCode == 200) {
-            du.firstName = JSON.parse(body).firstname;
-            du.lastName = JSON.parse(body).lastname;
-            du.email = JSON.parse(body);
-            du.picture = JSON.parse(body).picture_big;
-            //TODO uncomment du.save
-            // du.save();
-          }
-        });
-
-        request(urlToGetHistoryUser, function (error, response, body) {
-          if (!error && response.statusCode == 200) {
-            du.history = JSON.parse(body).data;
-            //TODO uncomment du.save
-            // du.save();
-          }
-        });
-
-        DeezerUser.find(function (err, deezerusers) {
-          if (err) return console.error(err);
-
-          controllers.sendHistoryDataInFormatJSON(deezerusers);
-        });
-
-      });
-      return done(null, profile);  
-}
-
 function getInfosUser (accessToken, refreshToken, profile, done) {
 
   var urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
-  var listSongs = [];
 
-  var  listArtistSorted = sortHistory(getHistory(urlToGetHistoryUser, listSongs));
-
-  controllers.sendHistoryDataInFormatJSON(listArtistSorted);    
-  // request(urlToGetHistoryUser, function (error, response, body) {
-  //   if (!error && response.statusCode == 200) {
-
-  //     console.log(JSON.parse(body).next);
-
-  //     var  listArtistSorted = sortHistory(JSON.parse(body).data);
-  //     controllers.sendHistoryDataInFormatJSON(listArtistSorted);
-  //   }
-  // });
+  listSongs = getHistory(urlToGetHistoryUser);
 
   return done(null, profile);  
 }
 
 function sortHistory (dataFromDeezer) {
+
   var listSorted = [];
   for (song in dataFromDeezer) {
+
     var artistName = dataFromDeezer[song].artist.name;
     if (listSorted.indexOf(artistName)  == -1) {
         listSorted.push(artistName);
     };
   }
-
   return listSorted;
 }
 
-function getHistory (urlAPI, listSongsConcatened ) {
+function getHistory (urlAPI) {
 
   request(urlAPI, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      listSongsConcatened.push(JSON.parse(body).data);
-      return listSongsConcatened;
+      var listArtistSorted = sortHistory(JSON.parse(body).data);
+      controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
     }
   });
 }
