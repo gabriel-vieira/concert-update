@@ -13,12 +13,11 @@ function _sortHistory (dataFromDeezer) {
   for (song in dataFromDeezer) {
 
     var artistName = dataFromDeezer[song].artist.name;
+
     if (listSorted.indexOf(artistName)  == -1) {
         listSorted.push(artistName);
     };
   }
-
-  console.log('listSorted', listSorted);
 
   return listSorted;
 }
@@ -32,11 +31,7 @@ function _getHistory (urlAPI) {
         next: JSON.parse(body).next,
         total: JSON.parse(body).total,
       };
-
-      // console.log('result', result);
-      _getNextHistory(result);
-      // var listArtistSorted = _sortHistory(result);
-      // controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
+      _getNextHistory(result); 
     }
   });
 }
@@ -50,10 +45,10 @@ function _getNextHistory (history) {
 
         if(_getHistoryIndexFromUrlAPI(history.next) < history.total) {
           _getNextHistory(history);
+        } else {
+          var listArtistSorted = _sortHistory(history.data);
+          controllers.sendHistoryDataInFormatJSON(listArtistSorted);
         }
-        
-        var listArtistSorted = _sortHistory(history.data);
-        controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
     }
   });  
 }
