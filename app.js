@@ -2,12 +2,12 @@ function getInfosUser (accessToken, refreshToken, profile, done) {
 
   var urlToGetHistoryUser = 'http://'+ config.deezer.host + config.deezer.pathHistoryUser + accessToken;
 
-  listSongs = getHistory(urlToGetHistoryUser);
+  listSongs = _getHistory(urlToGetHistoryUser);
 
   return done(null, profile);  
 }
 
-function sortHistory (dataFromDeezer) {
+function _sortHistory (dataFromDeezer) {
 
   var listSorted = [];
   for (song in dataFromDeezer) {
@@ -17,17 +17,50 @@ function sortHistory (dataFromDeezer) {
         listSorted.push(artistName);
     };
   }
+
+  console.log('listSorted', listSorted);
+
   return listSorted;
 }
 
-function getHistory (urlAPI) {
-
+function _getHistory (urlAPI) {
   request(urlAPI, function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      var listArtistSorted = sortHistory(JSON.parse(body).data);
-      controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
+
+      var result = {
+        data: JSON.parse(body).data,
+        next: JSON.parse(body).next,
+        total: JSON.parse(body).total,
+      };
+
+      // console.log('result', result);
+      _getNextHistory(result);
+      // var listArtistSorted = _sortHistory(result);
+      // controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
     }
   });
+}
+
+function _getNextHistory (history) {
+  request(history.next, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+
+        history.data = history.data.concat(JSON.parse(body).data);
+        history.next = JSON.parse(body).next;
+
+        if(_getHistoryIndexFromUrlAPI(history.next) < history.total) {
+          _getNextHistory(history);
+        }
+        
+        var listArtistSorted = _sortHistory(history.data);
+        controllers.sendHistoryDataInFormatJSON(listArtistSorted); 
+    }
+  });  
+}
+
+function _getHistoryIndexFromUrlAPI (urlAPI) {
+  var result = urlAPI.substr(urlAPI.lastIndexOf("&index=")+7);
+  return result;
 }
 
 var passport = require('passport')
