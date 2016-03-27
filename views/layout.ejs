@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Passport-Deezer Example</title>
+    <title>Concert Update - Rester informé des concerts de vos artistes préférés</title>
+    <link rel="stylesheet" href="/style/main.css">
   </head>
   <body>
+    <main>
     <% if (!user) { %>
       <p>
       <a href="/">Accueil</a> |
-      <a href="/login">Connection</a>
+      <a href="/auth/deezer">Connection avec Deezer</a>
       </p>
     <% } else { %>
       <p>
@@ -17,6 +19,7 @@
       </p>
     <% } %>
     <%- body %>
+    </main>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="/js/script.js"></script>
   </body>
