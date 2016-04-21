@@ -90,6 +90,9 @@ module.exports.set = function(passport) {
 }
 
 module.exports.sendHistoryDataInFormatJSON = function(result) {
+
+  console.log('result',result);
+
   app.get('/history', function(req, res){
     res.format({
         'application/json': function(){
