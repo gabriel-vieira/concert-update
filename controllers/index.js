@@ -90,11 +90,12 @@ module.exports.set = function(passport) {
 }
 
 module.exports.sendHistoryDataInFormatJSON = function(result) {
+
   app.get('/history', function(req, res){
     res.format({
         'application/json': function(){
-          res.send({ history: result });
+          res.send(result);
         }
-    });    
+    });
   });
 }
