@@ -1,4 +1,6 @@
-var config = {};
+"use strict";
+
+const config = {};
 config.deezer = {};
 config.songKick = {};
 
