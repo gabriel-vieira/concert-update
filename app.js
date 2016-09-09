@@ -35,7 +35,8 @@ passport.use(new DeezerStrategy({
 
   },
   function(accessToken, refreshToken, profile, done) {
-    deezer.getInfosUser(accessToken, refreshToken, profile, done);
+    deezer.getInfosUser(accessToken);
+    return done(null, profile);
   }
 ));
 
