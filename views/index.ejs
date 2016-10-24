@@ -1,12 +1,8 @@
-<% if (!user) { %>
+
   <h2>Bienvenue.</h2>
   <p>
   	<strong>Pour utiliser Concert Update, veuillez vous connecter avec votre compte préféré.</strong>
   </p>
   <p>
-  	Concert Update vous permet de rester informé sur les concerts de vos artistes préférés qui ont lieu dans votre ville. 
+  	Concert Update vous permet de rester informé sur les concerts de vos artistes préférés qui ont lieu dans votre ville.
   </p>
-<% } else { %>
-  <h2>Bonjour, <%= user.displayName %>.</h2>
-  <div id='results'></div>
-<% } %>

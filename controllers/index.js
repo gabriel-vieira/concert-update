@@ -44,9 +44,18 @@ module.exports.set = function(passport) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // app.get('/', function(req, res){
-  //   res.render('index', { user: req.user });
-  // });
+   app.get('/', function(req, res){
+     if (req.user) {
+       res.format({
+           'application/json': function(){
+             res.send(req.user);
+           }
+       });
+     } else {
+        res.render('index', { user: req.user });
+     }
+
+   });
 
   app.get('/account', ensureAuthenticated, function(req, res){
     res.render('account', { user: req.user });
