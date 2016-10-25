@@ -52,7 +52,8 @@ module.exports.set = function(passport) {
            }
        });
      } else {
-        res.render('index', { user: req.user });
+       console.log('not logged');
+        res.send(req.user);
      }
 
    });
