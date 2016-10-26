@@ -87,7 +87,7 @@ module.exports.set = function(passport) {
   app.get('/auth/deezer/callback',
     passport.authenticate('deezer', { failureRedirect: '/login' }),
     function(req, res) {
-      res.redirect('/');
+      res.redirect('http://localhost:9000/');
     }
   );
 
