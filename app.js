@@ -102,8 +102,16 @@ app.get('/auth/deezer',
 app.get('/auth/deezer/callback',
   passport.authenticate('deezer', { failureRedirect: '/login' }),
   function(req, res) {
+
+    var User = {};
+    User.displayName = req.user.displayName;
+    User.firstName = req.user.name.givenName;
+    User.lastName = req.user.name.familyName;
+    User.email = req.user.emails[0].value;
+    User.picture = req.user.photos[1].value;
+
     res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify({ user: req.user }));
+    res.send(User);
   }
 );
 
