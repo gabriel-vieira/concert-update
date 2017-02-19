@@ -34,12 +34,11 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new DeezerStrategy({
     clientID: config.deezer.cliendID,
     clientSecret: config.deezer.cliendSecret,
-    callbackURL: "http://localhost:3000/auth/deezer/callback",
+    callbackURL: "http://localhost:3000/api/auth/deezer/callback",
     scope: ['basic_access', 'email', 'listening_history'],
 
   },
   function(accessToken, refreshToken, profile, done) {
-    console.log('profile', profile);
     return done(null, profile);
   }
 ));
@@ -60,33 +59,36 @@ app.use(session({ secret: 'keyboard cat' }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
+// function ensureAuthenticated(req, res, next) {
+//   if (req.isAuthenticated()) {
+//     return next();
+//   }
+//
+//   res.redirect('/login')
+// }
+//
+// app.get('/', function(req, res){
+//   res.setHeader('Content-Type', 'application/json');
+//   res.send(JSON.stringify({ user: req.user }));
+// });
 
-  res.redirect('/login')
-}
-
-app.get('/', function(req, res){
-  res.setHeader('Content-Type', 'application/json');
-  res.send(JSON.stringify({ user: req.user }));
-});
-
-app.get('/account', ensureAuthenticated, function(req, res){
-  res.render('account', { user: req.user });
-});
-
-app.get('/login', function(req, res){
-  res.render('login', { user: req.user });
-});
+// app.get('/account', ensureAuthenticated, function(req, res){
+//   res.render('account', { user: req.user });
+// });
+//
+// app.get('/login', function(req, res){
+//   res.render('login', { user: req.user });
+// });
 
 // GET /auth/deezer
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  The first step in Deezer authentication will involve redirecting
 //   the user to deezer.com.  After authorization, Deezer will redirect the user
 //   back to this application at /auth/deezer/callback
-app.get('/auth/deezer',
+
+var api = express();
+
+api.get('/auth/deezer',
   passport.authenticate('deezer'),
   function(req, res){
     // The request will be redirected to Deezer for authentication, so this
@@ -99,7 +101,7 @@ app.get('/auth/deezer',
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-app.get('/auth/deezer/callback',
+api.get('/auth/deezer/callback',
   passport.authenticate('deezer', { failureRedirect: '/login' }),
   function(req, res) {
 
@@ -115,9 +117,30 @@ app.get('/auth/deezer/callback',
   }
 );
 
-app.get('/logout', function(req, res){
-  req.logout();
-  res.redirect('/');
-});
+api.get('/history',
+  function(req, res) {
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send([
+      {
+        'name': 'Mick Jagger',
+        'pictureUrl': 'http://e-cdn-images.deezer.com/images/artist/7b9e49277652ca2c4939d36470bd42a4/220x220-000000-80-0-0.jpg',
+        'songs': ['Sweet Thing','Out Of Focus','Use me']
+      },
+      {
+        'name': 'David Bowie',
+        'pictureUrl': 'http://e-cdn-images.deezer.com/images/artist/2ed9ffd66d730e7888a6d5e553af6fd3/220x220-000000-80-0-0.jpg',
+        'songs': ['Under pressure','Life on mars','Let\'s dance']
+      },
+    ]);
+  }
+);
+
+// app.get('/logout', function(req, res){
+//   req.logout();
+//   res.redirect('/');
+// });
+
+app.use('/api',api);
 
 var server = app.listen(3000);
