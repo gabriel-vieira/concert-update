@@ -10,6 +10,8 @@ var passport = require('passport'),
   methodOverride = require('method-override'),
   session = require('express-session');
 
+var User = {};
+
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
 //   serialize users into and deserialize users out of the session.  Typically,
@@ -18,12 +20,12 @@ var passport = require('passport'),
 //   have a database of user records, the complete Deezer profile is serialized
 //   and deserialized.
 passport.serializeUser(function(user, done) {
-  console.log('serializeUser user',user);
+  User = user;
   done(null, user);
 });
 
 passport.deserializeUser(function(obj, done) {
-  console.log('deserializeUser user',obj);
+  User = user;
   done(null, obj);
 });
 
@@ -105,21 +107,24 @@ api.get('/auth/deezer/callback',
   passport.authenticate('deezer', { failureRedirect: '/login' }),
   function(req, res) {
 
-    var User = {};
     User.displayName = req.user.displayName;
     User.firstName = req.user.name.givenName;
     User.lastName = req.user.name.familyName;
     User.email = req.user.emails[0].value;
     User.picture = req.user.photos[1].value;
+    console.log('User', User)
+    res.redirect('http://localhost:8000');
+  }
+);
 
+api.get('/user', function(req, res) {
     res.setHeader('Content-Type', 'application/json');
-    res.send(User);
+    res.send(JSON.stringify({ member: User }))
   }
 );
 
 api.get('/history',
   function(req, res) {
-
     res.setHeader('Content-Type', 'application/json');
     res.send([
       {
