@@ -1,16 +1,22 @@
+"use strict";
+
 var passport = require('passport'),
   http = require('http'),
   DeezerStrategy = require('passport-deezer').Strategy,
   config = require('./config'),
-  express = require('express')
+  express = require('express'),
   morgan = require('morgan'),
   cookieParser = require('cookie-parser'),
   bodyParser = require('body-parser'),
   expressLayouts = require('express-ejs-layouts'),
   methodOverride = require('method-override'),
-  session = require('express-session');
+  session = require('express-session'),
 
-var User = {};
+  deezer = require('./lib/deezer');
+
+
+let User = {};
+var token;
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -25,7 +31,6 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(obj, done) {
-  User = user;
   done(null, obj);
 });
 
@@ -38,9 +43,9 @@ passport.use(new DeezerStrategy({
     clientSecret: config.deezer.cliendSecret,
     callbackURL: "http://localhost:3000/api/auth/deezer/callback",
     scope: ['basic_access', 'email', 'listening_history'],
-
   },
   function(accessToken, refreshToken, profile, done) {
+    token = accessToken;
     return done(null, profile);
   }
 ));
@@ -106,13 +111,11 @@ api.get('/auth/deezer',
 api.get('/auth/deezer/callback',
   passport.authenticate('deezer', { failureRedirect: '/login' }),
   function(req, res) {
-
     User.displayName = req.user.displayName;
     User.firstName = req.user.name.givenName;
     User.lastName = req.user.name.familyName;
     User.email = req.user.emails[0].value;
     User.picture = req.user.photos[1].value;
-    console.log('User', User)
     res.redirect('http://localhost:8000');
   }
 );
@@ -126,21 +129,19 @@ api.get('/user', function(req, res) {
 api.get('/history',
   function(req, res) {
     res.setHeader('Content-Type', 'application/json');
-    res.send([
-      {
-        'name': 'Mick Jagger',
-        'pictureUrl': 'http://e-cdn-images.deezer.com/images/artist/7b9e49277652ca2c4939d36470bd42a4/220x220-000000-80-0-0.jpg',
-        'songs': ['Sweet Thing','Out Of Focus','Use me']
-      },
-      {
-        'name': 'David Bowie',
-        'pictureUrl': 'http://e-cdn-images.deezer.com/images/artist/2ed9ffd66d730e7888a6d5e553af6fd3/220x220-000000-80-0-0.jpg',
-        'songs': ['Under pressure','Life on mars','Let\'s dance']
-      },
-    ]);
+    deezer.getHistorySongs(token, function(response) {
+      res.send(JSON.parse(response).data);  
+    })
+  },
+  function(error) {
+    console.log('Impossible to get history : ' + error);
   }
 );
-
+/*      songs = {
+        data: JSON.parse().data,
+        next: JSON.parse(response).next,
+        total: JSON.parse(response).total,
+      };*/
 // app.get('/logout', function(req, res){
 //   req.logout();
 //   res.redirect('/');
