@@ -121,27 +121,36 @@ api.get('/auth/deezer/callback',
 );
 
 api.get('/user', function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify({ member: User }))
+    if (token) {
+      res.setHeader('Content-Type', 'application/json');
+      res.send(JSON.stringify({ member: User }))
+    } else {
+      res.send(401);
+    }
   }
 );
 
 api.get('/history',
   function(req, res) {
     res.setHeader('Content-Type', 'application/json');
-    deezer.getHistorySongs(token, function(response) {
-      res.send(JSON.parse(response).data);  
-    })
+    if (token) {
+      deezer.getHistorySongs(token, function(response) {
+          let listSongsNotSorted = JSON.parse(response).data;
+          let listSongSorted=[];
+          let _listSongDecorator = function(song) {
+            listSongSorted.push(song.title);
+          }
+          listSongsNotSorted.map(_listSongDecorator);
+          res.send(listSongSorted);
+      })
+    } else {
+      res.send(401);
+    }
   },
   function(error) {
     console.log('Impossible to get history : ' + error);
   }
 );
-/*      songs = {
-        data: JSON.parse().data,
-        next: JSON.parse(response).next,
-        total: JSON.parse(response).total,
-      };*/
 // app.get('/logout', function(req, res){
 //   req.logout();
 //   res.redirect('/');
