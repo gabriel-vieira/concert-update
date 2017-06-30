@@ -1,4 +1,4 @@
-var passport = require('passport'),
+let passport = require('passport'),
   http = require('http'),
   DeezerStrategy = require('passport-deezer').Strategy,
   config = require('./config'),
