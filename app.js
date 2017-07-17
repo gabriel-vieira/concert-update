@@ -11,9 +11,8 @@ var passport = require('passport'),
   expressLayouts = require('express-ejs-layouts'),
   methodOverride = require('method-override'),
   session = require('express-session'),
-
-  deezer = require('./lib/deezer');
-
+  deezer = require('./lib/deezer'),
+  songKick = require('./lib/songKick');
 
 let User = {};
 var token;
@@ -130,19 +129,24 @@ api.get('/user', function(req, res) {
   }
 );
 
+function sortSongs(songs){
+  let listSongSorted=[];
+  let _listSongDecorator = function(song) {
+    listSongSorted.push(song.title);
+  };
+  songs.map(_listSongDecorator);
+  return listSongSorted;
+}
+
 api.get('/history',
   function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     if (token) {
-      deezer.getHistorySongs(token, function(response) {
-          let listSongsNotSorted = JSON.parse(response).data;
-          let listSongSorted=[];
-          let _listSongDecorator = function(song) {
-            listSongSorted.push(song.title);
-          }
-          listSongsNotSorted.map(_listSongDecorator);
-          res.send(listSongSorted);
-      })
+      deezer.getHistorySongs(token).then(function(response){
+        res.send(sortSongs(JSON.parse(response).data));
+      }).catch(function(error){
+        console.error(error);
+      });
     } else {
       res.send(401);
     }
