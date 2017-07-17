@@ -1,6 +1,6 @@
 "use strict";
 
-var passport = require('passport'),
+let passport = require('passport'),
   http = require('http'),
   DeezerStrategy = require('passport-deezer').Strategy,
   config = require('./config'),
@@ -15,7 +15,7 @@ var passport = require('passport'),
   songKick = require('./lib/songKick');
 
 let User = {};
-var token;
+let token;
 
 // Passport session setup.
 //   To support persistent login sessions, Passport needs to be able to
@@ -49,7 +49,7 @@ passport.use(new DeezerStrategy({
   }
 ));
 
-var app = express();
+let app = express();
 
 // configure Express
 app.set('views', __dirname + '/views');
@@ -92,7 +92,7 @@ app.use(passport.session());
 //   the user to deezer.com.  After authorization, Deezer will redirect the user
 //   back to this application at /auth/deezer/callback
 
-var api = express();
+let api = express();
 
 api.get('/auth/deezer',
   passport.authenticate('deezer'),
@@ -129,7 +129,7 @@ api.get('/user', function(req, res) {
   }
 );
 
-function sortSongs(songs){
+function _sortSongs(songs) {
   let listSongSorted=[];
   let _listSongDecorator = function(song) {
     listSongSorted.push(song.title);
@@ -142,11 +142,13 @@ api.get('/history',
   function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     if (token) {
-      deezer.getHistorySongs(token).then(function(response){
-        res.send(sortSongs(JSON.parse(response).data));
-      }).catch(function(error){
-        console.error(error);
-      });
+      deezer.getHistorySongs(token).then(
+        function(response){
+          res.send(_sortSongs(JSON.parse(response).data));
+        }).catch(
+          function(error){
+            console.error(error);
+        });
     } else {
       res.send(401);
     }
@@ -162,4 +164,4 @@ api.get('/history',
 
 app.use('/api',api);
 
-var server = app.listen(3000);
+const server = app.listen(3000);
