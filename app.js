@@ -132,7 +132,28 @@ api.get('/user', function(req, res) {
 function _sortSongs(songs) {
   let listSongSorted=[];
   let _listSongDecorator = function(song) {
-    listSongSorted.push(song.title);
+
+    let result = {};
+        result.song = {};
+        result.artist = {};
+        result.album = {};
+
+    result.song["title"] = song.title;
+    result.song["link"] = song.link;
+    result.song["duration"] = song.duration;
+    result.song["preview"] = song.preview;
+    result.song["timestamp"] = song.timestamp;
+    result.song["title"] = song.title;
+    result.song["title"] = song.title;
+
+    result.artist ["name"] = song.artist.name;
+    result.artist ["link"] = song.artist.link;
+
+    result.album ["title"] = song.album.title;
+    result.album ["link"] = song.album.link;
+    result.album ["cover"] = song.album.cover;
+
+    listSongSorted.push(result);
   };
   songs.map(_listSongDecorator);
   return listSongSorted;
