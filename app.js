@@ -40,7 +40,7 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new DeezerStrategy({
     clientID: config.deezer.cliendID,
     clientSecret: config.deezer.cliendSecret,
-    callbackURL: "http://localhost:3000/api/auth/deezer/callback",
+    callbackURL: "http://localhost:8000/api/auth/deezer/callback",
     scope: ['basic_access', 'email', 'listening_history'],
   },
   function(accessToken, refreshToken, profile, done) {
@@ -115,7 +115,7 @@ api.get('/auth/deezer/callback',
     User.lastName = req.user.name.familyName;
     User.email = req.user.emails[0].value;
     User.picture = req.user.photos[1].value;
-    res.redirect('http://localhost:8000');
+    res.redirect('http://localhost:3000');
   }
 );
 
@@ -131,29 +131,30 @@ api.get('/user', function(req, res) {
 
 function _sortSongs(songs) {
   let listSongSorted=[];
+  let temp = [];
+
   let _listSongDecorator = function(song) {
 
+    if (temp.indexOf(song.artist.name) > -1) {
+      return
+    };
     let result = {};
         result.song = {};
         result.artist = {};
         result.album = {};
-
     result.song["title"] = song.title;
     result.song["link"] = song.link;
     result.song["duration"] = song.duration;
     result.song["preview"] = song.preview;
     result.song["timestamp"] = song.timestamp;
     result.song["title"] = song.title;
-    result.song["title"] = song.title;
-
-    result.artist ["name"] = song.artist.name;
-    result.artist ["link"] = song.artist.link;
-
-    result.album ["title"] = song.album.title;
-    result.album ["link"] = song.album.link;
-    result.album ["cover"] = song.album.cover;
-
+    result.artist["name"] = song.artist.name;
+    result.artist["link"] = song.artist.link;
+    result.album["title"] = song.album.title;
+    result.album["link"] = song.album.link;
+    result.album["cover"] = song.album.cover;
     listSongSorted.push(result);
+    temp.push(song.artist.name);
   };
   songs.map(_listSongDecorator);
   return listSongSorted;
@@ -165,7 +166,13 @@ api.get('/history',
     if (token) {
       deezer.getHistorySongs(token).then(
         function(response){
-          res.send(_sortSongs(JSON.parse(response).data));
+          let songs = _sortSongs(JSON.parse(response).data);
+
+          songs.map(function(item) {
+            songKick.getAuditoriums(item.artist.name);
+          });
+
+           res.send(_sortSongs(JSON.parse(response).data));
         }).catch(
           function(error){
             console.error(error);
@@ -185,4 +192,4 @@ api.get('/history',
 
 app.use('/api',api);
 
-const server = app.listen(3000);
+const server = app.listen(8000);
